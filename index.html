@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ເຄື່ອງມືສ້າງວາລະກອງປະຊຸມ ແລະ ຝຶກອົບຮົມ</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -212,8 +211,6 @@
         .btn-icon { padding: 6px 10px; font-size: 14px; }
         
         .export-btns { display: flex; gap: 15px; justify-content: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
-        .btn-pdf { background-color: #ea580c; color: white; }
-        .btn-pdf:hover { background-color: #c2410c; box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.2); }
         .btn-word { background-color: #0284c7; color: white; }
         .btn-word:hover { background-color: #0369a1; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2); }
 
@@ -363,7 +360,6 @@
         <button class="btn" style="background-color: #10b981; color: white;" data-i18n="importBtn" onclick="document.getElementById('importFile').click()">📂 ນຳເຂົ້າ (Import)</button>
         <button class="btn" style="background-color: #4b5563; color: white;" data-i18n="saveBtn" onclick="saveData()">💾 ບັນທຶກ (Save As)</button>
         <button class="btn btn-word" data-i18n="wordBtn" onclick="exportWord()">📄 ສົ່ງອອກເປັນ Word</button>
-        <button class="btn btn-pdf" data-i18n="pdfBtn" onclick="exportPDF()">🖨️ ສົ່ງອອກເປັນ PDF (ພິມ)</button>
     </div>
 </div>
 
@@ -397,7 +393,6 @@
             addItemBtn: "+ ເພີ່ມລາຍການໃໝ່",
             addDayBtn: "+ ເພີ່ມມື້ໃໝ່ (Section ໃໝ່)",
             wordBtn: "📄 ສົ່ງອອກເປັນ Word",
-            pdfBtn: "🖨️ ສົ່ງອອກເປັນ PDF (ພິມ)",
             saveBtn: "💾 ບັນທຶກ (Save As)",
             importBtn: "📂 ນຳເຂົ້າ (Import)",
             confirmDel: "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລົບວາລະກອງປະຊຸມຂອງມື້ນີ້ທັງໝົດ?",
@@ -430,7 +425,6 @@
             addItemBtn: "+ Add new item",
             addDayBtn: "+ Add new day (Section)",
             wordBtn: "📄 Export to Word",
-            pdfBtn: "🖨️ Export to PDF (Print)",
             saveBtn: "💾 Save As",
             importBtn: "📂 Import File",
             confirmDel: "Are you sure you want to delete this entire day's agenda?",
@@ -642,9 +636,6 @@
             input.setAttribute('value', input.value);
             if(input.tagName === 'TEXTAREA') {
                 input.innerHTML = input.value;
-                // ປັບຄວາມສູງໃຫ້ພໍດີເປະໆກັບໂຕໜັງສື ເພື່ອບໍ່ໃຫ້ເຫຼືອຊ່ອງຫວ່າງຕອນ Export PDF
-                input.style.height = 'auto';
-                input.style.height = input.scrollHeight + 'px';
             }
         });
         
@@ -659,29 +650,6 @@
     function resetAfterExport() {
         document.getElementById('logoImageExport').style.display = 'none';
         document.getElementById('logoBox').style.display = 'flex';
-        // ກັບຄືນຄວາມສູງ Textarea ໃຫ້ເປັນປົກກະຕິຫຼັງຈາກ Export ສຳເລັດ
-        document.querySelectorAll('#export-content textarea').forEach(textarea => {
-            textarea.style.height = '';
-        });
-    }
-
-    function exportPDF() {
-        prepareForExport();
-        const element = document.getElementById('export-content');
-        document.body.classList.add('export-mode');
-
-        const opt = {
-            margin:       [10, 10, 10, 10], // ຫຼຸດຂອບເຈ້ຍລົງເພື່ອໃຫ້ມີພື້ນທີ່ຕາຕະລາງຫຼາຍຂຶ້ນ
-            filename:     'Agenda_Training.pdf',
-            image:        { type: 'jpeg', quality: 1 },
-            html2canvas:  { scale: 2, useCORS: true, logging: false },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
-
-        html2pdf().set(opt).from(element).save().then(() => {
-            document.body.classList.remove('export-mode');
-            resetAfterExport();
-        });
     }
 
     function exportWord() {
@@ -716,30 +684,50 @@
             el.parentNode.replaceChild(span, el);
         });
         
+        // --- ຈັດການ Logo ໃຫ້ສະແດງໃນ Word ---
+        const logoImg = clone.querySelector('#logoImageExport');
+        if (logoImg && logoImg.src && logoImg.src.startsWith('data:image')) {
+            // ບັງຄັບໃຫ້ Word ເຫັນຮູບພາບຢ່າງຊັດເຈນ
+            logoImg.style.display = 'block';
+            logoImg.style.width = '150px'; // ກຳນົດຄວາມກວ້າງຄົງທີ່ໃຫ້ Word
+            logoImg.style.height = 'auto';
+            // ເອົາ style ອື່ນໆທີ່ອາດຈະກວນ Word ອອກ
+            logoImg.removeAttribute('style');
+            logoImg.setAttribute('style', 'width: 150px; height: auto; display: block;');
+        }
+        
         const element = clone.innerHTML;
         
         // Set correct font dynamically
         const wordFont = currentLang === 'lo' ? "'Phetsarath OT', sans-serif" : "Calibri, sans-serif";
         
-        // Enhanced Word Template with basic styles to match PDF
-        const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        // Enhanced Word Template with basic styles to match PDF AND Support Emojis
+        const header = `<html xmlns:v="urn:schemas-microsoft-com:vml"
+            xmlns:o="urn:schemas-microsoft-com:office:office"
+            xmlns:w="urn:schemas-microsoft-com:office:word"
+            xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
+            xmlns="http://www.w3.org/TR/REC-html40">
         <head><meta charset='utf-8'><title>Agenda Export</title>
+        <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
         <style>
-            body { font-family: ${wordFont}; }
+            body { 
+                font-family: ${wordFont}; 
+            }
+            * { font-family: ${wordFont}, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
+            
             table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; table-layout: auto;}
             th, td { border: 1px solid black; padding: 6px 8px; text-align: left; vertical-align: top; line-height: 1.3;}
             th { background-color: #f2f2f2; font-weight: bold; }
-            /* ບັງຄັບຄວາມກວ້າງໃນ Word */
-            th:nth-child(1), td:nth-child(1) { white-space: nowrap; width: 1%; } /* ເວລາ */
-            th:nth-child(2), td:nth-child(2) { white-space: nowrap; width: 1%; text-align: center; } /* ນາທີ */
-            th:nth-child(4), td:nth-child(4) { width: 20%; } /* ຜູ້ຮັບຜິດຊອບ */
+            th:nth-child(1), td:nth-child(1) { white-space: nowrap; width: 1%; } 
+            th:nth-child(2), td:nth-child(2) { white-space: nowrap; width: 1%; text-align: center; } 
+            th:nth-child(4), td:nth-child(4) { width: 20%; } 
             .no-export { display: none !important; }
             .day-header { background-color: #f2f2f2; padding: 10px; font-weight: bold; font-size: 14pt; margin-top: 20px;}
-            .header-container { text-align: center; margin-bottom: 20px; }
+            .header-container { margin-bottom: 20px; } /* ຍົກເລີກ text-align: center ເພື່ອໃຫ້ logo ຢູ່ຊ້າຍ */
             h2 { color: #2563eb; font-size: 18pt; text-align: center;}
             .info-grid { margin-bottom: 20px; }
             label { font-weight: bold; }
-            p, span, div { margin: 0; padding: 0; } /* ລຶບຊ່ອງຫວ່າງພາລາກາຟອອກທັງໝົດ */
+            p, span, div { margin: 0; padding: 0; }
         </style></head><body>`;
         const footer = "</body></html>";
         
