@@ -1,0 +1,868 @@
+<!DOCTYPE html>
+<html lang="lo">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ເຄື່ອງມືສ້າງວາລະກອງປະຊຸມ ແລະ ຝຶກອົບຮົມ</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary: #2563eb;
+            --primary-hover: #1d4ed8;
+            --danger: #ef4444;
+            --danger-hover: #dc2626;
+            --success: #10b981;
+            --success-hover: #059669;
+            --bg: #f1f5f9;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+        }
+
+        body {
+            font-family: 'Noto Sans Lao', 'Inter', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg);
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: var(--surface);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Top Controls */
+        .top-controls {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 20px;
+        }
+
+        select.lang-select {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-family: inherit;
+            cursor: pointer;
+            background-color: var(--surface);
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        select.lang-select:focus { border-color: var(--primary); }
+
+        /* Header & Logo */
+        .header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border);
+            padding-bottom: 20px;
+        }
+
+        .logo-section {
+            flex: 0 0 160px;
+            text-align: left;
+            position: relative;
+        }
+
+        .logo-upload-box {
+            width: 150px;
+            min-height: 80px;
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            overflow: hidden;
+            transition: border-color 0.2s, background-color 0.2s;
+            background-color: #f8fafc;
+        }
+        .logo-upload-box:hover { border-color: var(--primary); background-color: #f1f5f9; }
+        .logo-upload-box img { max-width: 100%; max-height: 100px; display: none; object-fit: contain; }
+        .logo-upload-box span { color: var(--text-muted); font-size: 13px; text-align: center; padding: 10px; }
+        #logoUpload { display: none; }
+
+        .title-section { flex: 1; text-align: center; padding-right: 160px; }
+        h2 { color: var(--primary); margin: 0; font-size: 28px; font-weight: 700; }
+
+        /* Inputs & Layout */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-size: 15px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 15px;
+            transition: all 0.2s;
+            background-color: #fdfdfd;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        textarea.input-field { resize: vertical; min-height: 44px; }
+
+        /* Day Section */
+        .day-section {
+            margin-bottom: 40px;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+        }
+
+        .day-header {
+            background: #f8fafc;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border);
+            border-left: 5px solid var(--primary);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .day-header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .day-label { font-weight: 700; color: var(--primary); font-size: 16px; }
+
+        /* Table Structure */
+        .table-responsive { overflow-x: auto; width: 100%; }
+        table { width: 100%; border-collapse: collapse; text-align: left; }
+        th {
+            background-color: #f1f5f9;
+            color: var(--text-muted);
+            font-weight: 600;
+            padding: 12px 15px;
+            font-size: 14px;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--border);
+        }
+        td { padding: 10px 15px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:hover td { background-color: rgba(248, 250, 252, 0.4); }
+
+        .time-display { font-weight: 600; color: var(--primary); white-space: nowrap; display: flex; align-items: center;}
+        td .input-field { margin: 0; }
+        td input[type="number"].input-field { width: 80px; text-align: center; }
+
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn:active { transform: translateY(1px); }
+        .btn-add { background-color: var(--success); color: white; margin: 15px 20px; }
+        .btn-add:hover { background-color: var(--success-hover); box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2); }
+        .btn-add-day { background-color: var(--primary); color: white; width: 100%; margin-top: 10px; padding: 12px; font-size: 16px; }
+        .btn-add-day:hover { background-color: var(--primary-hover); box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.2); }
+        .btn-delete { background-color: #fee2e2; color: var(--danger); padding: 8px 12px; border-radius: 6px; font-size: 14px; font-weight: 600;}
+        .btn-delete:hover { background-color: var(--danger); color: white; }
+        .btn-icon { padding: 6px 10px; font-size: 14px; }
+        
+        .export-btns { display: flex; gap: 15px; justify-content: center; margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); }
+        .btn-pdf { background-color: #ea580c; color: white; }
+        .btn-pdf:hover { background-color: #c2410c; box-shadow: 0 4px 6px -1px rgba(234, 88, 12, 0.2); }
+        .btn-word { background-color: #0284c7; color: white; }
+        .btn-word:hover { background-color: #0369a1; box-shadow: 0 4px 6px -1px rgba(2, 132, 199, 0.2); }
+
+        /* Drag and Drop */
+        tbody tr[draggable="true"] { cursor: grab; }
+        tbody tr[draggable="true"]:active { cursor: grabbing; }
+        tbody tr.dragging { opacity: 0.4; background-color: #e0f2fe !important; outline: 2px dashed var(--primary); }
+        .drag-handle { cursor: grab; color: #94a3b8; margin-right: 12px; font-size: 18px; user-select: none; transition: color 0.2s;}
+        .drag-handle:hover { color: var(--primary); }
+
+        /* Print & Export Mode */
+        @media print, .export-mode {
+            body[data-lang="lo"] { font-family: 'Phetsarath OT', sans-serif !important; }
+            body[data-lang="en"] { font-family: 'Calibri', sans-serif !important; }
+            body { background: white; padding: 0; }
+            .container { box-shadow: none; padding: 0; max-width: 100%; }
+            .no-export { display: none !important; }
+            .title-section { padding-right: 0; text-align: right; }
+            .header-container { padding-bottom: 10px; margin-bottom: 20px; }
+            .logo-upload-box { border: none; }
+            .logo-upload-box span { display: none; }
+            .day-section { box-shadow: none; border: none; border-bottom: 2px solid var(--border); border-radius: 0; margin-bottom: 20px; padding-bottom: 20px;}
+            .day-header { padding: 10px 0; background: transparent; border: none; border-bottom: 2px solid var(--primary); margin-bottom: 15px;}
+            th, td { border: 1px solid #000 !important; padding: 8px !important; }
+            th { background-color: #f1f5f9 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            /* Make inputs look like normal text */
+            .input-field { 
+                border: none !important; 
+                background: transparent !important; 
+                padding: 0 !important; 
+                box-shadow: none !important; 
+                resize: none; 
+                color: #000 !important;
+            }
+            input[type="date"].input-field::-webkit-calendar-picker-indicator { display: none; }
+            input[type="number"]::-webkit-inner-spin-button, 
+            input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+            input[type="number"] { -moz-appearance: textfield; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="top-controls no-export">
+        <select id="langSelect" class="lang-select" onchange="changeLanguage()">
+            <option value="lo">🇱🇦 ພາສາລາວ (Lao)</option>
+            <option value="en">🇬🇧 English</option>
+        </select>
+    </div>
+    
+    <div id="export-content">
+        <div class="header-container">
+            <div class="logo-section">
+                <div class="logo-upload-box no-export" onclick="document.getElementById('logoUpload').click()" id="logoBox">
+                    <span id="logoText" data-i18n="uploadLogo">+ ຄລິກເພື່ອໃສ່ໂລໂກ້</span>
+                    <img id="logoImage" alt="Logo">
+                </div>
+                <img id="logoImageExport" style="display: none; max-height: 80px;" alt="Logo Export">
+                <input type="file" id="logoUpload" accept="image/*" onchange="handleLogoUpload(event)">
+            </div>
+            <div class="title-section">
+                <h2 data-i18n="mainHeading">ວາລະການອົບຮົມ / ກອງປະຊຸມ</h2>
+            </div>
+        </div>
+        
+        <div class="info-grid">
+            <div>
+                <label data-i18n="topicLabel">ຫົວຂໍ້ກອງປະຊຸມ:</label>
+                <input type="text" id="topicInput" class="input-field" data-i18n-placeholder="topicHolder" placeholder="ເຊັ່ນ: ການວາງແຜນການຈັດຕັ້ງປະຕິບັດ...">
+            </div>
+            <div>
+                <label data-i18n="locLabel">ສະຖານທີ່:</label>
+                <input type="text" id="locInput" class="input-field" data-i18n-placeholder="locHolder" placeholder="ເຊັ່ນ: ຫຼວງພະບາງ">
+            </div>
+            <div>
+                <label data-i18n="dateLabel">ວັນທີ:</label>
+                <input type="text" id="dateInput" class="input-field" data-i18n-placeholder="dateHolder" placeholder="ເຊັ່ນ: 8-10 ມິຖຸນາ 2026">
+            </div>
+            <div>
+                <label data-i18n="facLabel">ຜູ້ອຳນວຍຄວາມສະດວກ:</label>
+                <input type="text" id="facInput" class="input-field" data-i18n-placeholder="facHolder" placeholder="ເຊັ່ນ: ເອມີລີ ສະແຕັມເມີ້">
+            </div>
+        </div>
+
+        <div style="margin-bottom: 30px;">
+            <label data-i18n="objLabel">ຈຸດປະສົງ:</label>
+            <textarea id="objInput" class="input-field" rows="3" data-i18n-placeholder="objHolder" placeholder="ກະລຸນາປ້ອນຈຸດປະສົງຂອງກອງປະຊຸມ ຫຼື ການຝຶກອົບຮົມ..."></textarea>
+        </div>
+
+        <div id="days-container">
+            <!-- Day 1 Default -->
+            <div class="day-section">
+                <div class="day-header">
+                    <div class="day-header-controls">
+                        <span class="day-label">ມື້ທີ 1:</span>
+                        <input type="date" class="input-field" style="width: auto; padding: 6px 10px;">
+                        <span class="no-export" style="font-weight: 600; color: var(--text-muted); margin-left: 10px;" data-i18n="startTime">ເວລາເລີ່ມຕົ້ນ:</span>
+                        <input type="time" class="day-start-time input-field no-export" value="08:00" onchange="calculateTimes()" style="width: auto; padding: 6px 10px;">
+                    </div>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="agendaTable">
+                        <thead>
+                            <tr>
+                                <th width="15%" data-i18n="thTime">ເວລາ</th>
+                                <th width="10%" data-i18n="thMin">ນາທີ</th>
+                                <th width="45%" data-i18n="thItem">ລາຍການ / ກິດຈະກຳ</th>
+                                <th width="25%" data-i18n="thPerson">ຜູ້ຮັບຜິດຊອບ</th>
+                                <th width="5%" class="no-export" style="text-align: center;" data-i18n="thManage">ຕັ້ງຄ່າ</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr draggable="true" style="background-color: #ffffff;">
+                                <td class="time-display"><span class="drag-handle no-export">⠿</span><span class="time-text">08:00 - 08:30</span></td>
+                                <td><input type="number" class="input-field duration" value="30" oninput="calculateTimes()" min="0"></td>
+                                <td><textarea class="input-field" rows="2" data-i18n-placeholder="itemHolder" placeholder="ລາຍລະອຽດກິດຈະກຳ..."></textarea></td>
+                                <td><input type="text" class="input-field" data-i18n-placeholder="personHolder" placeholder="ຊື່ຜູ້ຮັບຜິດຊອບ"></td>
+                                <td class="no-export" style="text-align: center; white-space: nowrap;">
+                                    <input type="color" class="row-bg-color no-export" value="#ffffff" onchange="changeRowColor(this)" title="ປ່ຽນສີພື້ນ (ສຳລັບເວລາພັກ)" style="width: 24px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; vertical-align: middle; margin-right: 4px;">
+                                    <button class="btn btn-delete btn-icon" onclick="deleteRow(this)" style="vertical-align: middle;">✕</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <button class="btn btn-add no-export" data-i18n="addItemBtn" onclick="addRow(this)">+ ເພີ່ມລາຍການໃໝ່</button>
+            </div>
+        </div>
+
+        <button class="btn btn-add-day no-export" data-i18n="addDayBtn" onclick="addDay()">+ ເພີ່ມມື້ໃໝ່ (Section ໃໝ່)</button>
+    </div>
+
+    <div class="export-btns no-export">
+        <input type="file" id="importFile" accept=".json" style="display: none;" onchange="loadData(event)">
+        <button class="btn" style="background-color: #10b981; color: white;" data-i18n="importBtn" onclick="document.getElementById('importFile').click()">📂 ນຳເຂົ້າ (Import)</button>
+        <button class="btn" style="background-color: #4b5563; color: white;" data-i18n="saveBtn" onclick="saveData()">💾 ບັນທຶກ (Save As)</button>
+        <button class="btn btn-word" data-i18n="wordBtn" onclick="exportWord()">📄 ສົ່ງອອກເປັນ Word</button>
+        <button class="btn btn-pdf" data-i18n="pdfBtn" onclick="exportPDF()">🖨️ ສົ່ງອອກເປັນ PDF (ພິມ)</button>
+    </div>
+</div>
+
+<script>
+    // --- ລະບົບປ່ຽນພາສາ (i18n) ---
+    const i18n = {
+        lo: {
+            pageTitle: "ເຄື່ອງມືສ້າງວາລະກອງປະຊຸມ ແລະ ຝຶກອົບຮົມ",
+            mainHeading: "ວາລະການອົບຮົມ / ກອງປະຊຸມ",
+            uploadLogo: "+ ຄລິກເພື່ອໃສ່ໂລໂກ້",
+            topicLabel: "ຫົວຂໍ້ກອງປະຊຸມ:",
+            topicHolder: "ເຊັ່ນ: ການວາງແຜນການຈັດຕັ້ງປະຕິບັດ...",
+            locLabel: "ສະຖານທີ່:",
+            locHolder: "ເຊັ່ນ: ຫຼວງພະບາງ",
+            dateLabel: "ວັນທີ:",
+            dateHolder: "ເຊັ່ນ: 8-10 ມິຖຸນາ 2026",
+            facLabel: "ຜູ້ອຳນວຍຄວາມສະດວກ:",
+            facHolder: "ເຊັ່ນ: ເອມີລີ ສະແຕັມເມີ້",
+            objLabel: "ຈຸດປະສົງ:",
+            objHolder: "ກະລຸນາປ້ອນຈຸດປະສົງຂອງກອງປະຊຸມ ຫຼື ການຝຶກອົບຮົມ...",
+            dayPrefix: "ມື້ທີ ",
+            startTime: "ເວລາເລີ່ມຕົ້ນ:",
+            delDay: "🗑️ ລົບມື້ນີ້",
+            thTime: "ເວລາ",
+            thMin: "ນາທີ",
+            thItem: "ລາຍການ / ກິດຈະກຳ",
+            thPerson: "ຜູ້ຮັບຜິດຊອບ",
+            thManage: "ຕັ້ງຄ່າ",
+            itemHolder: "ລາຍລະອຽດກິດຈະກຳ...",
+            personHolder: "ຊື່ຜູ້ຮັບຜິດຊອບ",
+            addItemBtn: "+ ເພີ່ມລາຍການໃໝ່",
+            addDayBtn: "+ ເພີ່ມມື້ໃໝ່ (Section ໃໝ່)",
+            wordBtn: "📄 ສົ່ງອອກເປັນ Word",
+            pdfBtn: "🖨️ ສົ່ງອອກເປັນ PDF (ພິມ)",
+            saveBtn: "💾 ບັນທຶກ (Save As)",
+            importBtn: "📂 ນຳເຂົ້າ (Import)",
+            confirmDel: "ທ່ານແນ່ໃຈບໍ່ວ່າຕ້ອງການລົບວາລະກອງປະຊຸມຂອງມື້ນີ້ທັງໝົດ?",
+            alertOneDay: "ຕ້ອງມີຢ່າງໜ້ອຍ 1 ມື້ໃນວາລະກອງປະຊຸມ!"
+        },
+        en: {
+            pageTitle: "Agenda & Training Builder",
+            mainHeading: "Training / Meeting Agenda",
+            uploadLogo: "+ Click to add Logo",
+            topicLabel: "Meeting Topic:",
+            topicHolder: "e.g., Implementation Planning...",
+            locLabel: "Location:",
+            locHolder: "e.g., Luang Prabang",
+            dateLabel: "Date:",
+            dateHolder: "e.g., 8-10 June 2026",
+            facLabel: "Facilitator:",
+            facHolder: "e.g., Emily Stammer",
+            objLabel: "Objective:",
+            objHolder: "Please enter the objective of the meeting or training...",
+            dayPrefix: "Day ",
+            startTime: "Start Time:",
+            delDay: "🗑️ Delete Day",
+            thTime: "Time",
+            thMin: "Mins",
+            thItem: "Item / Activity",
+            thPerson: "Responsible",
+            thManage: "Settings",
+            itemHolder: "Activity details...",
+            personHolder: "Person in charge",
+            addItemBtn: "+ Add new item",
+            addDayBtn: "+ Add new day (Section)",
+            wordBtn: "📄 Export to Word",
+            pdfBtn: "🖨️ Export to PDF (Print)",
+            saveBtn: "💾 Save As",
+            importBtn: "📂 Import File",
+            confirmDel: "Are you sure you want to delete this entire day's agenda?",
+            alertOneDay: "You must have at least 1 day in the agenda!"
+        }
+    };
+
+    let currentLang = 'lo';
+
+    function changeLanguage() {
+        currentLang = document.getElementById('langSelect').value;
+        document.title = i18n[currentLang].pageTitle;
+        document.body.setAttribute('data-lang', currentLang);
+        
+        document.querySelectorAll('[data-i18n]').forEach(el => {
+            const key = el.getAttribute('data-i18n');
+            if (i18n[currentLang][key]) el.innerHTML = i18n[currentLang][key]; // innerHTML to preserve icons if any
+        });
+        
+        document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-i18n-placeholder');
+            if (i18n[currentLang][key]) el.placeholder = i18n[currentLang][key];
+        });
+        
+        updateDayLabels();
+    }
+
+    function handleLogoUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('logoImage');
+                const imgExport = document.getElementById('logoImageExport');
+                const text = document.getElementById('logoText');
+                const box = document.getElementById('logoBox');
+                
+                img.src = e.target.result;
+                imgExport.src = e.target.result;
+                
+                img.style.display = 'block';
+                text.style.display = 'none';
+                box.style.border = 'none';
+                box.style.backgroundColor = 'transparent';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function calculateTimes() {
+        const days = document.querySelectorAll('.day-section');
+        
+        days.forEach(day => {
+            const startTimeStr = day.querySelector('.day-start-time').value;
+            if (!startTimeStr) return;
+
+            let [hours, minutes] = startTimeStr.split(':').map(Number);
+            let currentTime = new Date();
+            currentTime.setHours(hours, minutes, 0, 0);
+
+            const rows = day.querySelectorAll('.agendaTable tbody tr');
+
+            rows.forEach(row => {
+                const durationInput = row.querySelector('.duration').value;
+                const duration = parseInt(durationInput) || 0;
+
+                const startStr = formatTime(currentTime);
+                currentTime.setMinutes(currentTime.getMinutes() + duration);
+                const endStr = formatTime(currentTime);
+
+                let timeTextSpan = row.querySelector('.time-text');
+                if (timeTextSpan) {
+                    timeTextSpan.innerText = startStr + " - " + endStr;
+                }
+            });
+        });
+    }
+
+    function formatTime(date) {
+        return date.getHours().toString().padStart(2, '0') + ":" + date.getMinutes().toString().padStart(2, '0');
+    }
+
+    function addRow(btn) {
+        const tbody = btn.closest('.day-section').querySelector('tbody');
+        const tr = document.createElement('tr');
+        tr.setAttribute('draggable', 'true');
+        tr.style.backgroundColor = '#ffffff';
+        
+        tr.innerHTML = `
+            <td class="time-display"><span class="drag-handle no-export">⠿</span><span class="time-text"></span></td>
+            <td><input type="number" class="input-field duration" value="15" oninput="calculateTimes()" min="0"></td>
+            <td><textarea class="input-field" rows="2" data-i18n-placeholder="itemHolder" placeholder="${i18n[currentLang].itemHolder}"></textarea></td>
+            <td><input type="text" class="input-field" data-i18n-placeholder="personHolder" placeholder="${i18n[currentLang].personHolder}"></td>
+            <td class="no-export" style="text-align: center; white-space: nowrap;">
+                <input type="color" class="row-bg-color no-export" value="#ffffff" onchange="changeRowColor(this)" title="ປ່ຽນສີພື້ນ" style="width: 24px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; vertical-align: middle; margin-right: 4px;">
+                <button class="btn btn-delete btn-icon" onclick="deleteRow(this)" style="vertical-align: middle;">✕</button>
+            </td>
+        `;
+        
+        tbody.appendChild(tr);
+        calculateTimes();
+    }
+
+    function addDay() {
+        const container = document.getElementById('days-container');
+        const dayCount = container.querySelectorAll('.day-section').length + 1;
+        const dayDiv = document.createElement('div');
+        dayDiv.className = 'day-section';
+        
+        dayDiv.innerHTML = `
+            <div class="day-header">
+                <div class="day-header-controls">
+                    <span class="day-label">${i18n[currentLang].dayPrefix}${dayCount}:</span>
+                    <input type="date" class="input-field" style="width: auto; padding: 6px 10px;">
+                    <span class="no-export" style="font-weight: 600; color: var(--text-muted); margin-left: 10px;" data-i18n="startTime">${i18n[currentLang].startTime}</span>
+                    <input type="time" class="day-start-time input-field no-export" value="08:00" onchange="calculateTimes()" style="width: auto; padding: 6px 10px;">
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="agendaTable">
+                    <thead>
+                        <tr>
+                            <th width="15%" data-i18n="thTime">${i18n[currentLang].thTime}</th>
+                            <th width="10%" data-i18n="thMin">${i18n[currentLang].thMin}</th>
+                            <th width="45%" data-i18n="thItem">${i18n[currentLang].thItem}</th>
+                            <th width="25%" data-i18n="thPerson">${i18n[currentLang].thPerson}</th>
+                            <th width="5%" class="no-export" style="text-align: center;" data-i18n="thManage">${i18n[currentLang].thManage}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr draggable="true" style="background-color: #ffffff;">
+                            <td class="time-display"><span class="drag-handle no-export">⠿</span><span class="time-text">08:00 - 08:30</span></td>
+                            <td><input type="number" class="input-field duration" value="30" oninput="calculateTimes()" min="0"></td>
+                            <td><textarea class="input-field" rows="2" data-i18n-placeholder="itemHolder" placeholder="${i18n[currentLang].itemHolder}"></textarea></td>
+                            <td><input type="text" class="input-field" data-i18n-placeholder="personHolder" placeholder="${i18n[currentLang].personHolder}"></td>
+                            <td class="no-export" style="text-align: center; white-space: nowrap;">
+                                <input type="color" class="row-bg-color no-export" value="#ffffff" onchange="changeRowColor(this)" title="ປ່ຽນສີພື້ນ" style="width: 24px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; vertical-align: middle; margin-right: 4px;">
+                                <button class="btn btn-delete btn-icon" onclick="deleteRow(this)" style="vertical-align: middle;">✕</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <button class="btn btn-add no-export" data-i18n="addItemBtn" onclick="addRow(this)">${i18n[currentLang].addItemBtn}</button>
+        `;
+        
+        container.appendChild(dayDiv);
+        calculateTimes();
+    }
+
+    function updateDayLabels() {
+        const days = document.querySelectorAll('.day-section');
+        days.forEach((day, index) => {
+            const label = day.querySelector('.day-label');
+            if (label) {
+                label.innerText = i18n[currentLang].dayPrefix + (index + 1) + ':';
+            }
+        });
+    }
+
+    function changeRowColor(input) {
+        const tr = input.closest('tr');
+        tr.style.backgroundColor = input.value;
+    }
+
+    function deleteRow(btn) {
+        const row = btn.closest('tr');
+        row.remove();
+        calculateTimes();
+    }
+
+    let draggedRow = null;
+
+    document.addEventListener('dragstart', function(e) {
+        const tr = e.target.closest('tr');
+        if (tr && tr.hasAttribute('draggable')) {
+            draggedRow = tr;
+            setTimeout(() => tr.classList.add('dragging'), 0);
+        }
+    });
+
+    document.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        const targetRow = e.target.closest('tr');
+        
+        if (draggedRow && targetRow && targetRow !== draggedRow && targetRow.closest('tbody')) {
+            const bounding = targetRow.getBoundingClientRect();
+            const offset = bounding.y + (bounding.height / 2);
+            
+            if (e.clientY - offset > 0) {
+                targetRow.after(draggedRow);
+            } else {
+                targetRow.before(draggedRow);
+            }
+        }
+    });
+
+    document.addEventListener('dragend', function(e) {
+        if (draggedRow) {
+            draggedRow.classList.remove('dragging');
+            draggedRow = null;
+            calculateTimes();
+        }
+    });
+
+    function prepareForExport() {
+        const inputs = document.querySelectorAll('#export-content input[type="text"], #export-content input[type="date"], #export-content textarea');
+        inputs.forEach(input => {
+            input.setAttribute('value', input.value);
+            if(input.tagName === 'TEXTAREA') {
+                input.innerHTML = input.value;
+            }
+        });
+        
+        // Show export logo and hide upload box during export
+        const img = document.getElementById('logoImage');
+        if(img.src && img.src !== window.location.href) {
+             document.getElementById('logoImageExport').style.display = 'block';
+             document.getElementById('logoBox').style.display = 'none';
+        }
+    }
+    
+    function resetAfterExport() {
+        document.getElementById('logoImageExport').style.display = 'none';
+        document.getElementById('logoBox').style.display = 'flex';
+    }
+
+    function exportPDF() {
+        prepareForExport();
+        const element = document.getElementById('export-content');
+        document.body.classList.add('export-mode');
+
+        const opt = {
+            margin:       [15, 10, 15, 10], // top, left, bottom, right
+            filename:     'Agenda_Training.pdf',
+            image:        { type: 'jpeg', quality: 1 },
+            html2canvas:  { scale: 2, useCORS: true, logging: false },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(element).save().then(() => {
+            document.body.classList.remove('export-mode');
+            resetAfterExport();
+        });
+    }
+
+    function exportWord() {
+        prepareForExport();
+        const clone = document.getElementById('export-content').cloneNode(true);
+        
+        // Remove no-export items cleanly
+        clone.querySelectorAll('.no-export').forEach(el => el.remove());
+        
+        // Ensure background colors of rows are applied to cells for Word compatibility
+        clone.querySelectorAll('tbody tr').forEach(tr => {
+            if(tr.style.backgroundColor) {
+                tr.querySelectorAll('td').forEach(td => {
+                    td.style.backgroundColor = tr.style.backgroundColor;
+                });
+            }
+        });
+
+        // Replace inputs and textareas with plain text properly
+        clone.querySelectorAll('input, textarea').forEach(el => {
+            const span = document.createElement('span');
+            span.innerText = el.value || '';
+            el.parentNode.replaceChild(span, el);
+        });
+        
+        const element = clone.innerHTML;
+        
+        // Set correct font dynamically
+        const wordFont = currentLang === 'lo' ? "'Phetsarath OT', sans-serif" : "Calibri, sans-serif";
+        
+        // Enhanced Word Template with basic styles to match PDF
+        const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+        <head><meta charset='utf-8'><title>Agenda Export</title>
+        <style>
+            body { font-family: ${wordFont}; }
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px;}
+            th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top;}
+            th { background-color: #f2f2f2; font-weight: bold; }
+            .no-export { display: none !important; }
+            .day-header { background-color: #f2f2f2; padding: 10px; font-weight: bold; font-size: 14pt; margin-top: 20px;}
+            .header-container { text-align: center; margin-bottom: 20px; }
+            h2 { color: #2563eb; font-size: 18pt; text-align: center;}
+            .info-grid { margin-bottom: 20px; }
+            label { font-weight: bold; }
+            p { margin: 2px 0; }
+        </style></head><body>`;
+        const footer = "</body></html>";
+        
+        const sourceHTML = header + element + footer;
+        
+        const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+        const fileDownload = document.createElement("a");
+        document.body.appendChild(fileDownload);
+        fileDownload.href = source;
+        fileDownload.download = 'Agenda_Training.doc';
+        fileDownload.click();
+        document.body.removeChild(fileDownload);
+        resetAfterExport();
+    }
+
+    // --- Save & Load Data (JSON) ---
+    function saveData() {
+        const data = {
+            topic: document.getElementById('topicInput').value,
+            loc: document.getElementById('locInput').value,
+            date: document.getElementById('dateInput').value,
+            fac: document.getElementById('facInput').value,
+            obj: document.getElementById('objInput').value,
+            logo: document.getElementById('logoImage').src,
+            days: []
+        };
+
+        const daySections = document.querySelectorAll('.day-section');
+        daySections.forEach(day => {
+            const dayDate = day.querySelector('input[type="date"]').value;
+            const startTime = day.querySelector('.day-start-time').value;
+            const rows = [];
+            
+            day.querySelectorAll('tbody tr').forEach(tr => {
+                const colorInput = tr.querySelector('.row-bg-color');
+                rows.push({
+                    color: colorInput ? colorInput.value : '#ffffff',
+                    duration: tr.querySelector('.duration').value,
+                    item: tr.querySelector('textarea').value,
+                    person: tr.querySelectorAll('input[type="text"]')[0].value
+                });
+            });
+            
+            data.days.push({ date: dayDate, startTime: startTime, rows: rows });
+        });
+
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
+        const dlAnchorElem = document.createElement('a');
+        dlAnchorElem.setAttribute("href", dataStr);
+        dlAnchorElem.setAttribute("download", "Agenda_Data.json");
+        dlAnchorElem.click();
+    }
+
+    function loadData(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const data = JSON.parse(e.target.result);
+                
+                // Populate Inputs
+                document.getElementById('topicInput').value = data.topic || "";
+                document.getElementById('locInput').value = data.loc || "";
+                document.getElementById('dateInput').value = data.date || "";
+                document.getElementById('facInput').value = data.fac || "";
+                document.getElementById('objInput').value = data.obj || "";
+                
+                // Populate Logo
+                if (data.logo && data.logo.startsWith('data:image')) {
+                    document.getElementById('logoImage').src = data.logo;
+                    document.getElementById('logoImageExport').src = data.logo;
+                    document.getElementById('logoImage').style.display = 'block';
+                    document.getElementById('logoText').style.display = 'none';
+                    document.getElementById('logoBox').style.backgroundColor = 'transparent';
+                    document.getElementById('logoBox').style.border = 'none';
+                }
+
+                // Populate Days
+                const container = document.getElementById('days-container');
+                container.innerHTML = ""; // Clear existing days
+
+                data.days.forEach((dayData, index) => {
+                    const dayCount = index + 1;
+                    const dayDiv = document.createElement('div');
+                    dayDiv.className = 'day-section';
+                    
+                    let rowsHTML = '';
+                    dayData.rows.forEach(row => {
+                        let rowColor = row.color || '#ffffff';
+                        rowsHTML += `
+                            <tr draggable="true" style="background-color: ${rowColor};">
+                                <td class="time-display"><span class="drag-handle no-export">⠿</span><span class="time-text"></span></td>
+                                <td><input type="number" class="input-field duration" value="${row.duration}" oninput="calculateTimes()" min="0"></td>
+                                <td><textarea class="input-field" rows="2" data-i18n-placeholder="itemHolder" placeholder="${i18n[currentLang].itemHolder}">${row.item}</textarea></td>
+                                <td><input type="text" class="input-field" value="${row.person}" data-i18n-placeholder="personHolder" placeholder="${i18n[currentLang].personHolder}"></td>
+                                <td class="no-export" style="text-align: center; white-space: nowrap;">
+                                    <input type="color" class="row-bg-color no-export" value="${rowColor}" onchange="changeRowColor(this)" title="ປ່ຽນສີພື້ນ" style="width: 24px; height: 24px; padding: 0; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; vertical-align: middle; margin-right: 4px;">
+                                    <button class="btn btn-delete btn-icon" onclick="deleteRow(this)" style="vertical-align: middle;">✕</button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+
+                    dayDiv.innerHTML = `
+                        <div class="day-header">
+                            <div class="day-header-controls">
+                                <span class="day-label">${i18n[currentLang].dayPrefix}${dayCount}:</span>
+                                <input type="date" class="input-field" value="${dayData.date}" style="width: auto; padding: 6px 10px;">
+                                <span class="no-export" style="font-weight: 600; color: var(--text-muted); margin-left: 10px;" data-i18n="startTime">${i18n[currentLang].startTime}</span>
+                                <input type="time" class="day-start-time input-field no-export" value="${dayData.startTime}" onchange="calculateTimes()" style="width: auto; padding: 6px 10px;">
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="agendaTable">
+                                <thead>
+                                    <tr>
+                                        <th width="15%" data-i18n="thTime">${i18n[currentLang].thTime}</th>
+                                        <th width="10%" data-i18n="thMin">${i18n[currentLang].thMin}</th>
+                                        <th width="45%" data-i18n="thItem">${i18n[currentLang].thItem}</th>
+                                        <th width="25%" data-i18n="thPerson">${i18n[currentLang].thPerson}</th>
+                                        <th width="5%" class="no-export" style="text-align: center;" data-i18n="thManage">${i18n[currentLang].thManage}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${rowsHTML}
+                                </tbody>
+                            </table>
+                        </div>
+                        <button class="btn btn-add no-export" data-i18n="addItemBtn" onclick="addRow(this)">${i18n[currentLang].addItemBtn}</button>
+                    `;
+                    container.appendChild(dayDiv);
+                });
+
+                calculateTimes(); // Recalculate times
+                changeLanguage(); // Refresh translations
+
+            } catch (err) {
+                alert("ຮູບແບບໄຟລ໌ບໍ່ຖືກຕ້ອງ (Invalid JSON file)");
+                console.error(err);
+            }
+        };
+        reader.readAsText(file);
+        event.target.value = ''; // Reset file input so same file can be uploaded again
+    }
+
+    // Initialize on load
+    window.onload = function() {
+        calculateTimes();
+        changeLanguage();
+    };
+</script>
+</body>
+</html>
