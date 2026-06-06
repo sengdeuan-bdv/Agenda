@@ -237,8 +237,15 @@
             .logo-upload-box span { display: none; }
             .day-section { box-shadow: none; border: none; border-bottom: 2px solid var(--border); border-radius: 0; margin-bottom: 20px; padding-bottom: 20px;}
             .day-header { padding: 10px 0; background: transparent; border: none; border-bottom: 2px solid var(--primary); margin-bottom: 15px;}
-            th, td { border: 1px solid #000 !important; padding: 8px !important; }
+            th, td { border: 1px solid #000 !important; padding: 6px 8px !important; }
             th { background-color: #f1f5f9 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            
+            /* ປັບແຕ່ງຄວາມກວ້າງຂອງຕາຕະລາງຕອນ Export ໃຫ້ພໍດີ */
+            table { table-layout: auto !important; width: 100% !important; }
+            th:nth-child(1), td:nth-child(1) { white-space: nowrap !important; width: 1% !important; } /* ຄໍລຳເວລາ ບໍ່ໃຫ້ຕົກແຖວ */
+            th:nth-child(2), td:nth-child(2) { white-space: nowrap !important; width: 1% !important; text-align: center !important; } /* ຄໍລຳນາທີ */
+            th:nth-child(4), td:nth-child(4) { width: 20% !important; } /* ຄໍລຳຜູ້ຮັບຜິດຊອບ */
+            .time-display { display: block !important; white-space: nowrap !important; }
             
             /* Make inputs look like normal text */
             .input-field { 
@@ -655,7 +662,7 @@
         document.body.classList.add('export-mode');
 
         const opt = {
-            margin:       [15, 10, 15, 10], // top, left, bottom, right
+            margin:       [10, 10, 10, 10], // ຫຼຸດຂອບເຈ້ຍລົງເພື່ອໃຫ້ມີພື້ນທີ່ຕາຕະລາງຫຼາຍຂຶ້ນ
             filename:     'Agenda_Training.pdf',
             image:        { type: 'jpeg', quality: 1 },
             html2canvas:  { scale: 2, useCORS: true, logging: false },
@@ -674,6 +681,10 @@
         
         // Remove no-export items cleanly
         clone.querySelectorAll('.no-export').forEach(el => el.remove());
+        
+        // Remove fixed widths so table can auto-resize nicely in Word
+        clone.querySelectorAll('th').forEach(th => th.removeAttribute('width'));
+        clone.querySelectorAll('td').forEach(td => td.removeAttribute('width'));
         
         // Ensure background colors of rows are applied to cells for Word compatibility
         clone.querySelectorAll('tbody tr').forEach(tr => {
@@ -701,9 +712,13 @@
         <head><meta charset='utf-8'><title>Agenda Export</title>
         <style>
             body { font-family: ${wordFont}; }
-            table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px;}
-            th, td { border: 1px solid black; padding: 8px; text-align: left; vertical-align: top;}
+            table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; table-layout: auto;}
+            th, td { border: 1px solid black; padding: 6px 8px; text-align: left; vertical-align: top;}
             th { background-color: #f2f2f2; font-weight: bold; }
+            /* ບັງຄັບຄວາມກວ້າງໃນ Word */
+            th:nth-child(1), td:nth-child(1) { white-space: nowrap; width: 1%; } /* ເວລາ */
+            th:nth-child(2), td:nth-child(2) { white-space: nowrap; width: 1%; text-align: center; } /* ນາທີ */
+            th:nth-child(4), td:nth-child(4) { width: 20%; } /* ຜູ້ຮັບຜິດຊອບ */
             .no-export { display: none !important; }
             .day-header { background-color: #f2f2f2; padding: 10px; font-weight: bold; font-size: 14pt; margin-top: 20px;}
             .header-container { text-align: center; margin-bottom: 20px; }
