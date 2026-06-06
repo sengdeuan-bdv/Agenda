@@ -659,11 +659,11 @@
         // Remove no-export items cleanly
         clone.querySelectorAll('.no-export').forEach(el => el.remove());
         
-        // Remove fixed widths so table can auto-resize nicely in Word
+        // Remove fixed widths
         clone.querySelectorAll('th').forEach(th => th.removeAttribute('width'));
         clone.querySelectorAll('td').forEach(td => td.removeAttribute('width'));
         
-        // Ensure background colors of rows are applied to cells for Word compatibility
+        // Maintain Background colors
         clone.querySelectorAll('tbody tr').forEach(tr => {
             if(tr.style.backgroundColor) {
                 tr.querySelectorAll('td').forEach(td => {
@@ -672,11 +672,10 @@
             }
         });
 
-        // Replace inputs and textareas with plain text properly
+        // Replace inputs
         clone.querySelectorAll('input, textarea').forEach(el => {
             const span = document.createElement('span');
             if (el.tagName === 'TEXTAREA') {
-                // ປ່ຽນການລົງແຖວທຳມະດາເປັນ <br> ເພື່ອປ້ອງກັນ Word ເພີ່ມຊ່ອງຫວ່າງ Paragraph
                 span.innerHTML = (el.value || '').replace(/\n/g, '<br>');
             } else {
                 span.innerText = el.value || '';
@@ -684,37 +683,32 @@
             el.parentNode.replaceChild(span, el);
         });
         
-        // --- ຈັດການ Logo ໃຫ້ສະແດງໃນ Word ---
+        // --- ຈັດການ Logo ແບບ MHTML ເພື່ອໃຫ້ Word ອ່ານຮູບໄດ້ 100% ---
+        let mhtmlImages = '';
         const logoImg = clone.querySelector('#logoImageExport');
         if (logoImg && logoImg.src && logoImg.src.startsWith('data:image')) {
-            // ບັງຄັບໃຫ້ Word ເຫັນຮູບພາບຢ່າງຊັດເຈນ
-            logoImg.style.display = 'block';
-            logoImg.style.width = '150px'; // ກຳນົດຄວາມກວ້າງຄົງທີ່ໃຫ້ Word
-            logoImg.style.height = 'auto';
-            // ເອົາ style ອື່ນໆທີ່ອາດຈະກວນ Word ອອກ
+            const base64Data = logoImg.src.split(',')[1];
+            const mimeType = logoImg.src.split(';')[0].split(':')[1];
+            // ຕັ້ງຊື່ໄຟລ໌ຈຳລອງ ເພື່ອໃຫ້ Word ເຊື່ອມໂຍງໄດ້
+            const imgName = 'logo_image.' + (mimeType.split('/')[1] || 'png');
+            
+            // ປ່ຽນ src ເປັນຊື່ໄຟລ໌ຈຳລອງ (Word ຈະຊອກຫາໃນ MHTML ພາກສ່ວນລຸ່ມ)
+            logoImg.src = imgName;
             logoImg.removeAttribute('style');
             logoImg.setAttribute('style', 'width: 150px; height: auto; display: block;');
+            
+            // ສ້າງ Part ຂອງຮູບພາບໃນ MHTML
+            mhtmlImages += `\n------=_NextPart_Boundary\nContent-Location: ${imgName}\nContent-Type: ${mimeType}\nContent-Transfer-Encoding: base64\n\n${base64Data}\n`;
         }
         
         const element = clone.innerHTML;
-        
-        // Set correct font dynamically
         const wordFont = currentLang === 'lo' ? "'Phetsarath OT', sans-serif" : "Calibri, sans-serif";
         
-        // Enhanced Word Template with basic styles to match PDF AND Support Emojis
-        const header = `<html xmlns:v="urn:schemas-microsoft-com:vml"
-            xmlns:o="urn:schemas-microsoft-com:office:office"
-            xmlns:w="urn:schemas-microsoft-com:office:word"
-            xmlns:m="http://schemas.microsoft.com/office/2004/12/omml"
-            xmlns="http://www.w3.org/TR/REC-html40">
+        const header = `<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
         <head><meta charset='utf-8'><title>Agenda Export</title>
-        <!--[if gte mso 9]><xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom><w:DoNotOptimizeForBrowser/></w:WordDocument></xml><![endif]-->
         <style>
-            body { 
-                font-family: ${wordFont}; 
-            }
+            body { font-family: ${wordFont}; }
             * { font-family: ${wordFont}, "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif; }
-            
             table { width: 100%; border-collapse: collapse; margin-top: 10px; margin-bottom: 20px; table-layout: auto;}
             th, td { border: 1px solid black; padding: 6px 8px; text-align: left; vertical-align: top; line-height: 1.3;}
             th { background-color: #f2f2f2; font-weight: bold; }
@@ -723,7 +717,7 @@
             th:nth-child(4), td:nth-child(4) { width: 20%; } 
             .no-export { display: none !important; }
             .day-header { background-color: #f2f2f2; padding: 10px; font-weight: bold; font-size: 14pt; margin-top: 20px;}
-            .header-container { margin-bottom: 20px; } /* ຍົກເລີກ text-align: center ເພື່ອໃຫ້ logo ຢູ່ຊ້າຍ */
+            .header-container { margin-bottom: 20px; text-align: left; }
             h2 { color: #2563eb; font-size: 18pt; text-align: center;}
             .info-grid { margin-bottom: 20px; }
             label { font-weight: bold; }
@@ -731,15 +725,22 @@
         </style></head><body>`;
         const footer = "</body></html>";
         
-        const sourceHTML = header + element + footer;
+        const htmlContent = header + element + footer;
         
-        const source = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(sourceHTML);
+        // ປະກອບ MHTML (MIME HTML) ເຊິ່ງເປັນວິທີທີ່ Word ຮອງຮັບຮູບພາບໄດ້ດີທີ່ສຸດ
+        const mhtml = `MIME-Version: 1.0\nContent-Type: multipart/related; boundary="----=_NextPart_Boundary"\n\n------=_NextPart_Boundary\nContent-Type: text/html; charset="utf-8"\nContent-Transfer-Encoding: 8bit\n\n${htmlContent}${mhtmlImages}\n------=_NextPart_Boundary--`;
+        
+        // ໃຊ້ Blob ເພື່ອປ້ອງກັນບັນຫາ URL ຍາວເກີນໄປ ແລະ ດາວໂຫຼດໄຟລ໌
+        const blob = new Blob([mhtml], { type: 'application/msword;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
         const fileDownload = document.createElement("a");
         document.body.appendChild(fileDownload);
-        fileDownload.href = source;
+        fileDownload.href = url;
         fileDownload.download = 'Agenda_Training.doc';
         fileDownload.click();
         document.body.removeChild(fileDownload);
+        URL.revokeObjectURL(url);
+        
         resetAfterExport();
     }
 
